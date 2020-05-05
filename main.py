@@ -3,11 +3,11 @@
 __author__ = 'Douglas Uba'
 __email__  = 'douglas.uba@inpe.br'
 
+import goes.widgets
 from PyQt5.QtWidgets import QApplication
-import widgets
 import sys
 
 app = QApplication(sys.argv)
-w = widgets.Downloader()
+w = goes.widgets.Downloader()
 w.show()
 sys.exit(app.exec_())

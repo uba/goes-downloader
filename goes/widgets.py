@@ -4,22 +4,13 @@ __author__ = 'Douglas Uba'
 __email__  = 'douglas.uba@inpe.br'
 
 import datetime
+import goes
 from itertools import chain
 from PyQt5 import uic
 from PyQt5.QtCore import Qt, QDate, QDir
 from PyQt5.QtWidgets import QFileDialog, QListWidgetItem, QMessageBox, QWidget
 import s3fs
 import sys
-
-repositories = {
-    'GOES-16' : 's3://noaa-goes16/',
-    'GOES-17' : 's3://noaa-goes17/'
-}
-
-def generateDays(start, end):
-    '''This function returns all-days between given two dates.'''
-    delta = end - start
-    return [start + datetime.timedelta(i) for i in range(delta.days + 1)]
 
 class Downloader(QWidget):
     def __init__(self):
@@ -28,20 +19,21 @@ class Downloader(QWidget):
         # Load user-interface from ui file
         uic.loadUi('./ui/downloader.ui', self)
 
-        # Setup repositories
-        for repo in repositories:
-            self.satelliteComboBox.addItem(repo)
-        self.repository = repositories['GOES-16']
+        # Setup buckets
+        for bucket in goes.BUCKETS:
+            self.satelliteComboBox.addItem(bucket)
+            
+        # Define default bucket
+        self.bucket = goes.BUCKETS['GOES-16']
 
         # Populate hours
-        for i in range(0, 24):
-            item = QListWidgetItem(str(i).zfill(2), self.hourListWidget, Qt.ItemIsUserCheckable);
-            item.setFlags(item.flags() | Qt.ItemIsUserCheckable)
+        for hour in goes.HOURS:
+            item = QListWidgetItem(hour, self.hourListWidget, Qt.ItemIsUserCheckable);
             item.setCheckState(Qt.Checked)
 
         # Populate channels
-        for i in range(1, 17):
-            item = QListWidgetItem(str(i).zfill(2), self.channelListWidget, Qt.ItemIsUserCheckable);
+        for channel in goes.CHANNELS:
+            item = QListWidgetItem(channel, self.channelListWidget, Qt.ItemIsUserCheckable);
             item.setCheckState(Qt.Checked)
 
         # Flag that indicates if selected product is channel-separated
@@ -72,13 +64,13 @@ class Downloader(QWidget):
     
     def __fillProducts(self):
         self.productListWidget.clear()
-        for p in self.fs.ls(self.repository):
+        for p in self.fs.ls(self.bucket):
             if 'index.html' not in p:
                 self.productListWidget.addItem(p)
         self.productListWidget.setCurrentRow(0)
 
     def __onSatelliteComboBoxChanged(self, satellite):
-        self.repository = repositories[satellite]
+        self.bucket = goes.BUCKETS[satellite]
         self.__fillProducts()
 
     def __onProductListChanged(self, current, previous):
@@ -128,7 +120,7 @@ class Downloader(QWidget):
         start = self.startDateTimeEdit.date().toPyDate()
         end = self.endDateTimeEdit.date().toPyDate()
 
-        days = generateDays(start, end)
+        days = goes.utils.generateListOfDays(start, end)
         
         # Build list of files that will be download
         files = []
@@ -147,8 +139,10 @@ class Downloader(QWidget):
                             day.strftime('%Y'), day.strftime('%j'), hour, channel) 
                         )
                         files.append(self.fs.glob(query))
+
         # Flat list
         files = list(chain.from_iterable(files))
+        
         # Download each file
         for f in files:
             print('Downloading', f)
