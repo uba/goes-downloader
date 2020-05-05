@@ -13,9 +13,9 @@
   <property name="windowTitle">
    <string>GOES - Downloader</string>
   </property>
-  <layout class="QGridLayout" name="gridLayout_17">
+  <layout class="QGridLayout" name="gridLayout_18">
    <item row="0" column="0">
-    <layout class="QGridLayout" name="gridLayout_16">
+    <layout class="QGridLayout" name="gridLayout_17">
      <item row="0" column="0">
       <widget class="QGroupBox" name="satelliteGroupBox">
        <property name="title">
@@ -29,15 +29,29 @@
       </widget>
      </item>
      <item row="1" column="0">
-      <layout class="QGridLayout" name="gridLayout_15">
+      <layout class="QGridLayout" name="gridLayout_16">
        <item row="0" column="0">
         <widget class="QGroupBox" name="productGroupBox">
          <property name="title">
           <string>Product</string>
          </property>
-         <layout class="QGridLayout" name="gridLayout">
+         <layout class="QGridLayout" name="gridLayout_15">
           <item row="0" column="0">
-           <widget class="QListWidget" name="productListWidget"/>
+           <layout class="QGridLayout" name="gridLayout">
+            <item row="0" column="0">
+             <widget class="QCheckBox" name="productsCheckBox">
+              <property name="text">
+               <string>Select/Unselect All</string>
+              </property>
+              <property name="checked">
+               <bool>false</bool>
+              </property>
+             </widget>
+            </item>
+            <item row="1" column="0">
+             <widget class="QListWidget" name="productListWidget"/>
+            </item>
+           </layout>
           </item>
          </layout>
         </widget>

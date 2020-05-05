@@ -3,19 +3,16 @@
 __author__ = 'Douglas Uba'
 __email__  = 'douglas.uba@inpe.br'
 
-import datetime
-import goes
-from itertools import chain
+import goes, goes.downloader
 from PyQt5 import uic
-from PyQt5.QtCore import Qt, QDate, QDir
-from PyQt5.QtWidgets import QFileDialog, QListWidgetItem, QMessageBox, QWidget
+from PyQt5.QtCore import *
+from PyQt5.QtGui import *
+from PyQt5.QtWidgets import *
 import s3fs
-import sys
 
 class Downloader(QWidget):
     def __init__(self):
         super(Downloader, self).__init__()
-
         # Load user-interface from ui file
         uic.loadUi('./ui/downloader.ui', self)
 
@@ -50,7 +47,7 @@ class Downloader(QWidget):
 
         # Signals & slots
         self.satelliteComboBox.currentTextChanged[str].connect(self.__onSatelliteComboBoxChanged)
-        self.productListWidget.currentItemChanged.connect(self.__onProductListChanged)
+        self.productsCheckBox.stateChanged.connect(self.__onProductsCheckBoxChanged)
         self.hoursCheckBox.stateChanged.connect(self.__onHoursCheckBoxChanged)
         self.channelsCheckBox.stateChanged.connect(self.__onChannelsCheckBoxChanged)
         self.outputDirectoryPushButton.released.connect(self.__onOutputDirectoryPushButtonReleased)
@@ -64,19 +61,19 @@ class Downloader(QWidget):
     
     def __fillProducts(self):
         self.productListWidget.clear()
-        for p in self.fs.ls(self.bucket):
-            if 'index.html' not in p:
-                self.productListWidget.addItem(p)
+        for product in self.fs.ls(self.bucket):
+            if 'index.html' not in product:
+                item = QListWidgetItem(product, self.productListWidget, Qt.ItemIsUserCheckable);
+                item.setCheckState(Qt.Unchecked)
         self.productListWidget.setCurrentRow(0)
 
     def __onSatelliteComboBoxChanged(self, satellite):
         self.bucket = goes.BUCKETS[satellite]
         self.__fillProducts()
 
-    def __onProductListChanged(self, current, previous):
-        if current:
-            self.hasChannels = 'L1b-Rad' in current.text() or 'L2-CMI' in current.text()
-            self.channelGroupBox.setEnabled(self.hasChannels)
+    def __onProductsCheckBoxChanged(self, state):
+        for i in range(self.hourListWidget.count()):
+            self.productListWidget.item(i).setCheckState(state)
 
     def __onHoursCheckBoxChanged(self, state):
         for i in range(self.hourListWidget.count()):
@@ -92,15 +89,16 @@ class Downloader(QWidget):
         )
 
     def __onDownloadPushButtonReleased(self):
-        product = self.productListWidget.currentItem().text()
-        outputdir =  self.outputDirectoryLineEdit.text()
-        if not outputdir:
+        # Verify selected products
+        products = self.__getSelectedItems(self.productListWidget)
+        if not products:
             QMessageBox.information(self, 'Information',
-                'Please, select a directory to save files.'
+                'Please, select at least one product.'
             )
-            self.outputDirectoryLineEdit.setFocus()
+            self.productListWidget.setFocus()
             return
 
+        # Verify selected hours
         hours = self.__getSelectedItems(self.hourListWidget)
         if not hours:
             QMessageBox.information(self, 'Information',
@@ -109,6 +107,7 @@ class Downloader(QWidget):
             self.hourListWidget.setFocus()
             return
 
+        # Verify selected channels
         channels = self.__getSelectedItems(self.channelListWidget)
         if self.hasChannels and not channels:
             QMessageBox.information(self, 'Information',
@@ -117,36 +116,28 @@ class Downloader(QWidget):
             self.channelListWidget.setFocus()
             return
 
+        # Verify output directory
+        output =  self.outputDirectoryLineEdit.text()
+        if not output:
+            QMessageBox.information(self, 'Information',
+                'Please, select a directory to save files.'
+            )
+            self.outputDirectoryLineEdit.setFocus()
+            return
+        
+        # Get selected dates
         start = self.startDateTimeEdit.date().toPyDate()
         end = self.endDateTimeEdit.date().toPyDate()
 
-        days = goes.utils.generateListOfDays(start, end)
-        
-        # Build list of files that will be download
-        files = []
-        for day in days:
-            for hour in hours:
-                if not self.hasChannels:
-                    # search files by day/hour: <product/YYYY/J/HH/*>
-                    query = ('{}/{}/{}/{}/*'.format(product,
-                        day.strftime('%Y'), day.strftime('%j'), hour)
-                    )
-                    files.append(self.fs.glob(query))
-                else:
-                    for channel in channels:
-                        # search files by day/hour/channel: <product/YYYY/J/HH/*>
-                        query = ('{}/{}/{}/{}/*C{}*'.format(product,
-                            day.strftime('%Y'), day.strftime('%j'), hour, channel) 
-                        )
-                        files.append(self.fs.glob(query))
+        progress = ProgressDialog(self)
 
-        # Flat list
-        files = list(chain.from_iterable(files))
-        
-        # Download each file
-        for f in files:
-            print('Downloading', f)
-            #self.fs.get(f, outputdir + '/' + f.split('/')[-1])
+        # Start search and download
+        download = ProcessRunnable(target=goes.downloader.download,
+                        args=(self.bucket, products, start, end, hours, channels, output, progress))
+
+        download.start()
+
+        progress.exec()
 
     def __getSelectedItems(self, listWidget):
         values = []
@@ -155,3 +146,63 @@ class Downloader(QWidget):
             if item.checkState():
                 values.append(item.text())
         return values
+
+class ProgressDialog(QDialog):
+    def __init__(self, parent=None):
+        super(ProgressDialog, self).__init__(parent=parent)
+        # Load user-interface from ui file
+        uic.loadUi('./ui/progress.ui', self)
+        # Flag that indicates if process was canceled
+        self.canceled = False
+        # Signal & slots
+        self.cancelPushButton.released.connect(self.onCancelPushButtonReleased)
+
+    @pyqtSlot(int)
+    def onStartDownloadTask(self, numberOfFiles):
+        self.progressBar.setMaximum(numberOfFiles)
+        self.progressBar.setValue(0)
+
+    @pyqtSlot(str)
+    def onStartFileDownload(self, file):
+        self.__appendText(('- Downloading {}'.format(file)))
+
+    @pyqtSlot(str)
+    def onEndFileDownload(self, file):
+        self.__appendText(('* Download finished {}\n'.format(file)))
+        self.progressBar.setValue(self.progressBar.value() + 1)
+
+    @pyqtSlot()
+    def onEndDownloadTask(self):
+        self.__appendText('Done!')
+        self.progressBar.setValue(self.progressBar.maximum())
+        QApplication.restoreOverrideCursor()
+
+    def onCancelPushButtonReleased(self):
+        self.canceled = True
+        self.__appendText('\n*** Aborting. Please, wait... ***')
+        self.cancelPushButton.setDisabled(True)
+        QApplication.setOverrideCursor(Qt.WaitCursor)
+
+    def wasCanceled(self):
+        return self.canceled
+
+    def __appendText(self, text):
+        self.notificationPlainTextEdit.appendPlainText(text)
+        scrool = self.notificationPlainTextEdit.verticalScrollBar()
+        scrool.setValue(scrool.maximum())
+
+class ProcessRunnable(QRunnable):
+    def __init__(self, target, args):
+        QRunnable.__init__(self)
+        self.t = target
+        self.args = args
+        self.setAutoDelete(True)
+
+    def __del__(self):
+        QThreadPool.globalInstance().waitForDone()
+
+    def run(self):
+        self.t(*self.args)
+
+    def start(self):
+        QThreadPool.globalInstance().start(self)
