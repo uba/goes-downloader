@@ -164,11 +164,11 @@ class ProgressDialog(QDialog):
 
     @pyqtSlot(str)
     def onStartFileDownload(self, file):
-        self.__appendText(('- Downloading {}'.format(file)))
+        self.__appendText(('- Downloading {}'.format(file.split('/')[-1])))
 
     @pyqtSlot(str)
     def onEndFileDownload(self, file):
-        self.__appendText(('* Download finished {}\n'.format(file)))
+        self.__appendText(('* Finished -> {}'.format(file)))
         self.progressBar.setValue(self.progressBar.value() + 1)
 
     @pyqtSlot()
