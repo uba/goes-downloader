@@ -11,6 +11,6 @@ CHANNELS = [str(i).zfill(2) for i in range(1, 17)]
 
 # Define S3 Buckets
 BUCKETS = {
-    'GOES-16' : 's3://noaa-goes16/',
-    'GOES-17' : 's3://noaa-goes17/'
+    'GOES-16' : 'noaa-goes16/',
+    'GOES-17' : 'noaa-goes17/'
 }
