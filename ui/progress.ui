@@ -18,8 +18,15 @@
     <layout class="QGridLayout" name="gridLayout_2">
      <item row="0" column="0">
       <widget class="QPlainTextEdit" name="notificationPlainTextEdit">
+       <property name="font">
+        <font>
+         <pointsize>10</pointsize>
+         <strikeout>false</strikeout>
+         <kerning>true</kerning>
+        </font>
+       </property>
        <property name="styleSheet">
-        <string notr="true">background-color: #DDDDDD</string>
+        <string notr="true">background-color: #EEEEEE</string>
        </property>
        <property name="plainText">
         <string notr="true"/>
