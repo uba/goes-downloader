@@ -18,6 +18,8 @@ def download(bucket, products, start, end, hours, channels, output, progress=Non
     # Searching for files
     files = []
     for product in products:
+        if bucket not in product:
+            product = bucket + product
         hasChannels = goes.utils.isChannelSeparated(product)
         for day in days:
             for hour in hours:
