@@ -1,5 +1,7 @@
 # goes-downloader
-Python application that can be used to download dataset from GOES satellite on AWS.
+Python application that can be used to download GOES imagery on Amazon Web Service (AWS) S3 Storage.
+
+GOES on AWS: https://registry.opendata.aws/noaa-goes/
 
 Command-line tool and Graphical User-Interface available.
 
