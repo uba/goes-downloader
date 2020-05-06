@@ -5,6 +5,7 @@ __email__  = 'douglas.uba@inpe.br'
 
 import datetime
 from PyQt5.QtCore import QObject, pyqtSignal
+from tqdm import tqdm
 
 def generateListOfDays(start, end):
     '''This function returns all-days between given two dates.'''
@@ -21,3 +22,17 @@ class Notifier(QObject):
     startFileDownload = pyqtSignal(str) # str: remote file name
     endFileDownload = pyqtSignal(str) # str: remote file name
     endDownloadTask = pyqtSignal() # none
+
+class TqdmProgress:
+    def __init__(self):
+        self.progressBar = None
+    def onStartDownloadTask(self, numberOfFiles):
+        self.progressBar = tqdm(desc='Download GOES data', total=numberOfFiles, unit='file')
+    def onStartFileDownload(self, file):
+        pass
+    def onEndFileDownload(self, file):
+        self.progressBar.update()
+    def onEndDownloadTask(self):
+        pass
+    def wasCanceled(self):
+        return False
