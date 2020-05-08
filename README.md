@@ -5,6 +5,38 @@ GOES on AWS: https://registry.opendata.aws/noaa-goes/
 
 Command-line tool and Graphical User-Interface available.
 
+## Available Products
+* ABI-L1b-Rad - ABI L1b Radiances
+* ABI-L2-CMIP - ABI L2 Cloud and Moisture Imagery
+* ABI-L2-MCMIP - ABI L2 Cloud and Moisture Imagery (Multi-Band Format)
+* GLM-L2-LCFA - GLM L2 Lightning Detection
+* ABI-L2-ACHA - ABI L2 Cloud Top Height
+* ABI-L2-ACHT - ABI L2 Cloud Top Temperature
+* ABI-L2-ACM - ABI L2 Clear Sky Mask
+* ABI-L2-ACTP - ABI L2 Cloud Top Phase
+* ABI-L2-ADP - ABI L2 Aerosol Detection
+* ABI-L2-AOD - ABI L2 Aerosol Optical Depth
+* ABI-L2-COD - ABI L2 Cloud Optical Depth
+* ABI-L2-CPS - ABI L2 Cloud Particle Size
+* ABI-L2-CTP - ABI L2 Cloud Top Pressure
+* ABI-L2-DMW - ABI L2 Derived Motion Winds
+* ABI-L2-DSI - ABI L2 Derived Stability Indices
+* ABI-L2-DSR - ABI L2 Downward Shortwave Radiation
+* ABI-L2-FDC - ABI L2 Fire (Hot Spot Characterization)</option>
+* ABI-L2-LST - ABI L2 Land Surface Temperature
+* ABI-L2-LVMP - ABI L2 Legacy Vertical Moisture Profile
+* ABI-L2-LVTP - ABI L2 Legacy Vertical Temperature Profile
+* ABI-L2-RRQPE - ABI L2 Rainfall Rate (Quantitative Precipitation Estimate)</option>
+* ABI-L2-RSR - ABI L2 Reflected Shortwave Radiation TOA
+* ABI-L2-SST - ABI L2 Seas Surface Temperature
+* ABI-L2-TPW - ABI L2 Total Precipitable Water
+* ABI-L2-VAA - ABI L2 Volcanic Ash: Detection and Hight
+* SUVI-L1b-Fe093 - Solar Ultraviolet Imager L1b Extreme Ultraviolet Fe093
+* SUVI-L1b-Fe131 - Solar Ultraviolet Imager L1b Extreme Ultraviolet Fe131
+* SUVI-L1b-Fe171 - Solar Ultraviolet Imager L1b Extreme Ultraviolet Fe171
+* SUVI-L1b-Fe195 - Solar Ultraviolet Imager L1b Extreme Ultraviolet Fe195
+* SUVI-L1b-Fe284 - Solar Ultraviolet Imager L1b Extreme Ultraviolet Fe284
+* SUVI-L1b-He303 - Solar Ultraviolet Imager L1b ExtremeUltraviolet He303
 ## Usage
 ```
 goes-downloader.py [-h] -satellite {GOES-16,GOES-17}
