@@ -29,6 +29,28 @@ optional arguments:
   -version, -v show program's version number and exit
 ```
 
+## Examples
+Download GOES-16 ABI-L1b data (Full-disk), 8 April 2020, 13h, Channels: 01 (VIS), 08 (WV) and 13 (IR).
+```bash
+goes-downloader.py -satellite GOES-16
+                   -products ABI-L1b-RadF
+                   -start 20200408 -hours 13
+                   -channels 01 08 13
+                   -output ./my_output_dir
+                   
+Download GOES data:   6%|█████     | 1/18 [02:35<43:59, 155.29s/file]
+```
+
+Download GOES-16 GLM data, between 8 April 2020 and 10 April 2020, All-hours.
+```bash
+goes-downloader.py -satellite GOES-16
+                   -products GLM-L2-LCFA
+                   -start 20200408 -end 20200410
+                   -output ./my_output_dir
+                   
+Download GOES data:   1%|▍   | 68/12960 [00:57<3:01:12,  1.19file/s]
+```
+
 ## Graphical User-Interface
 ![](preview/main-ui.png)
 ![](preview/progress-ui.png) 
