@@ -38,9 +38,24 @@ Some products with (C - CONUS), (M - Mesoscale) or (F - Full-disk) option.
 * **SUVI-L1b-Fe195** - Solar Ultraviolet Imager L1b Extreme Ultraviolet Fe195
 * **SUVI-L1b-Fe284** - Solar Ultraviolet Imager L1b Extreme Ultraviolet Fe284
 * **SUVI-L1b-He303** - Solar Ultraviolet Imager L1b ExtremeUltraviolet He303
+
+## Install
+Clone the repository:
+```
+git clone https://github.com/uba/goes-downloader.git
+```
+Go to the source code folder:
+```
+cd goes-downloader
+```
+Install:
+```
+pip3 install -r requirements.txt
+```
+
 ## Usage
 ```
-goes-downloader.py [-h] -satellite {GOES-16,GOES-17}
+python goes-downloader.py [-h] -satellite {GOES-16,GOES-17}
                         -products PRODUCTS [PRODUCTS ...]
                         -start YYYYMMDD [-end YYYYMMDD]
                         [-hours HOURS [HOURS ...]]
@@ -85,5 +100,8 @@ Download GOES data:   1%|▍   | 68/12960 [00:57<3:01:12,  1.19file/s]
 ```
 
 ## Graphical User-Interface
+```bash
+python goes-downloader-ui.py
+```
 ![](preview/main-ui.png)
 ![](preview/progress-ui.png) 
